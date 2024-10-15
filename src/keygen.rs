@@ -1,4 +1,4 @@
-use crate::group_hash_function::{generate_primes, map_string_to_prime};
+use crate::group_hash_function::map_string_to_prime;
 use unknown_order::*;
 
 // Key generation algorithm for Key Value Commitments (KVaC)
@@ -10,13 +10,13 @@ pub fn keygen(
         BigNumber,
         Group,
         BigNumber,
-        Box<dyn Fn(&str) -> Option<BigNumber>>,
+        Box<dyn Fn(&str) -> BigNumber>,
     ),
     (BigNumber, BigNumber),
 ) {
-    // 1 !!!!!
+    // 1 !!!!!      -----       (size valid?)
 
-    // Create a safe group of unknown order (size valid?)
+    // Create a safe group of unknown order
     let p = BigNumber::safe_prime(1024);
     let q = BigNumber::safe_prime(1024);
 
@@ -31,9 +31,8 @@ pub fn keygen(
     // Get the exponent from the lambda
     let exp = BigNumber::from(lambda);
 
-    // 2 !!!!!
+    // 2 !!!!!    -----         (Group modulus?  +  2^lambda?)
 
-    // Group modulus?
     let a = BigNumber::from(two.clone()).modpow(&exp, &group.modulus);
     let b = BigNumber::from(two.clone()).modpow(&(exp + 1), &group.modulus);
 
@@ -52,20 +51,15 @@ pub fn keygen(
     // Compute bit-length of b
     let zeta = b.bit_length();
 
-    // Generate primes up to a certain limit, 2^(zeta + 1)
-    let prime_limit = (1 << (zeta + 1)) as usize;
-    let primes: Vec<BigNumber> = generate_primes(prime_limit, b.clone());
-
     // Create the hash function using map_string_to_prime
-    let hash_function: Box<dyn Fn(&str) -> Option<BigNumber>> = {
-        let primes = primes.clone();
-        Box::new(move |input: &str| map_string_to_prime(&primes, input))
+    let hash_function: Box<dyn Fn(&str) -> BigNumber> = {
+        let limit = BigNumber::from(zeta + 1);
+        let b_clone = b.clone();
+        Box::new(move |input: &str| map_string_to_prime(limit.clone(), b_clone.clone(), input))
     };
 
-    // 3 !!!!!
-
-    // Generator
-    let g = BigNumber::random(&group.modulus).modpow(&a, &group.modulus);
+    // Generator g
+    let g = BigNumber::random(&group.modulus);
 
     // Create the public parameters
     let pp = (a.clone(), b.clone(), group, g.clone(), hash_function);

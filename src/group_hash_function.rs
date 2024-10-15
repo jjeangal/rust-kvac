@@ -1,40 +1,38 @@
 use unknown_order::BigNumber;
 
-// Function to generate primes up to a given limit, excluding a specific prime
-pub fn generate_primes(limit: usize, exclude: BigNumber) -> Vec<BigNumber> {
-    let mut primes = Vec::new();
-    let mut is_prime = vec![true; limit + 1];
-
-    for num in 2..=limit {
-        if is_prime[num] {
-            if BigNumber::from(num) != exclude {
-                primes.push(BigNumber::from(num));
-            }
-            for multiple in (num * 2..=limit).step_by(num) {
-                is_prime[multiple] = false;
-            }
-        }
-    }
-    primes
-}
-
-// 4 !!!!!
-
 // Polynomial Rolling Hash Function
-
-// Hash a string to a number
-fn polynomial_hash(input: &str, base: u64, mod_val: u64) -> u64 {
-    let mut hash: u64 = 0;
+fn polynomial_hash(input: &str, base: BigNumber, mod_val: &BigNumber) -> BigNumber {
+    let mut hash = BigNumber::zero();
     for (i, byte) in input.bytes().enumerate() {
-        hash = (hash + (byte as u64 * base.pow(i as u32)) % mod_val) % mod_val;
+        let byte_value = BigNumber::from(byte);
+        let base_pow = base.modpow(&BigNumber::from(i), &BigNumber::from(1));
+        hash = (hash + (byte_value * base_pow) % mod_val) % mod_val;
     }
     hash
 }
 
+// Function to find the next prime number greater than or equal to a given number
+fn next_prime(start: BigNumber) -> BigNumber {
+    let mut candidate = start;
+    while !candidate.is_prime() {
+        candidate = candidate + BigNumber::from(1);
+    }
+    candidate
+}
+
+// 3 !!!!!      -----     (base?)
+
 // Hash a string to a prime number
-pub fn map_string_to_prime(primes: &Vec<BigNumber>, input: &str) -> Option<BigNumber> {
-    let mod_val = primes.len() as u64; // Use the number of primes for modulo
-    let hash_value = polynomial_hash(input, 31, mod_val);
-    let index = (hash_value % mod_val) as usize;
-    Some(primes[index].clone())
+pub fn map_string_to_prime(limit: BigNumber, exclude: BigNumber, input: &str) -> BigNumber {
+    // Base value of 31 is used for the polynomial hash function
+    let base = BigNumber::from(31);
+    let hash_value = polynomial_hash(input, base, &limit);
+    let prime_candidate = next_prime(hash_value);
+
+    // Ensure the prime is not equal to the excluded prime
+    if prime_candidate == exclude {
+        return next_prime(prime_candidate + BigNumber::from(1));
+    }
+
+    prime_candidate
 }
