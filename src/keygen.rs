@@ -1,20 +1,64 @@
 use crate::group_hash_function::map_string_to_prime;
+use std::sync::Arc;
 use unknown_order::*;
+
+fn is_odd(bn: &BigNumber) -> bool {
+    let bytes = bn.to_bytes();
+    bytes.last().map_or(false, |&b| b % 2 != 0)
+}
+
+fn is_even(bn: &BigNumber) -> bool {
+    !is_odd(bn)
+}
+
+fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
+    assert!(
+        k > &BigNumber::from(0) && is_odd(k),
+        "k must be positive and odd"
+    );
+
+    let mut n = n % k;
+    let mut k = k.clone();
+    let mut t = 1;
+
+    while n != BigNumber::from(0) {
+        while is_even(&n) {
+            n /= BigNumber::from(2);
+            let r = &k % BigNumber::from(8);
+            if r == BigNumber::from(3) || r == BigNumber::from(5) {
+                t = -t;
+            }
+        }
+        std::mem::swap(&mut n, &mut k);
+        if &n % BigNumber::from(4) == BigNumber::from(3)
+            && &k % BigNumber::from(4) == BigNumber::from(3)
+        {
+            t = -t;
+        }
+        n %= &k;
+    }
+
+    if k == BigNumber::from(1) {
+        t
+    } else {
+        0
+    }
+}
 
 // Key generation algorithm for Key Value Commitments (KVaC)
 pub fn keygen(
     lambda: usize,
 ) -> (
     (
-        BigNumber,
-        BigNumber,
+        // BigNumber,
+        // BigNumber,
         Group,
         BigNumber,
-        Box<dyn Fn(&str) -> BigNumber>,
+        Arc<dyn Fn(&str) -> BigNumber + Send + Sync>,
     ),
     (BigNumber, BigNumber),
 ) {
-    // 1 !!!!!      -----       (size valid?)
+    // 1 !!!!!      ----->       size valid?    ---->     Function that maps lambda to size
 
     // Create a safe group of unknown order
     let p = BigNumber::safe_prime(1024);
@@ -23,46 +67,32 @@ pub fn keygen(
     // Calculate the modulus
     let modulus = p.clone() * q.clone();
 
-    let two = BigNumber::from(2);
-
     // Create the group
     let group = Group { modulus };
 
-    // Get the exponent from the lambda
-    let exp = BigNumber::from(lambda);
+    // // Get the exponent from the lambda
+    // let exp = BigNumber::from(lambda);
 
-    // 2 !!!!!    -----         (Group modulus?  +  2^lambda?)
+    // // 2 !!!!!    -----         (Group modulus?)
 
-    let a = BigNumber::from(two.clone()).modpow(&exp, &group.modulus);
-    let b = BigNumber::from(two.clone()).modpow(&(exp + 1), &group.modulus);
+    // let two = BigNumber::from(2);
 
-    // // Set V = [0, a) as a vector of BigNumber
-    // let a_bytes = a.to_bytes();
-    // let a_int = u64::from_be_bytes(
-    //     a_bytes[..8]
-    //         .try_into()
-    //         .expect("BigNumber to u64 conversion failed"),
-    // );
-    // let v: Vec<BigNumber> = (0..a_int).map(|x| BigNumber::from(x)).collect();
-
-    // // Set K = {0, 1}*
-    // let k = vec![BigNumber::from(0), BigNumber::from(1)];
-
-    // Compute bit-length of b
-    let zeta = b.bit_length();
+    // let a = BigNumber::from(two.clone()).modpow(&exp, &group.modulus);
+    // let b = BigNumber::from(two.clone()).modpow(&(exp + 1), &group.modulus);
 
     // Create the hash function using map_string_to_prime
-    let hash_function: Box<dyn Fn(&str) -> BigNumber> = {
-        let limit = BigNumber::from(zeta + 1);
-        let b_clone = b.clone();
-        Box::new(move |input: &str| map_string_to_prime(limit.clone(), b_clone.clone(), input))
-    };
+    let hash_function: Arc<dyn Fn(&str) -> BigNumber + Send + Sync> =
+        { Arc::new(move |input: &str| map_string_to_prime(input)) };
 
     // Generator g
     let g = BigNumber::random(&group.modulus);
 
+    let symb = jacobi(&g, &group.modulus);
+
+    println!("symb: {:?}", symb);
+
     // Create the public parameters
-    let pp = (a.clone(), b.clone(), group, g.clone(), hash_function);
+    let pp = (group, g.clone(), hash_function);
     let c = (BigNumber::from(1), g.clone());
 
     // Return the public parameters
