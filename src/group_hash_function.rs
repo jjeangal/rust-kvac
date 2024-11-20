@@ -1,18 +1,15 @@
+use sha256::digest;
 use unknown_order::BigNumber;
 
-// Polynomial Rolling Hash Function
-fn polynomial_hash(input: &str, base: BigNumber, mod_val: &BigNumber) -> BigNumber {
-    let mut hash = BigNumber::zero();
-    for (i, byte) in input.bytes().enumerate() {
-        let byte_value = BigNumber::from(byte);
-        let base_pow = base.modpow(&BigNumber::from(i), &BigNumber::from(1));
-        hash = (hash + (byte_value * base_pow) % mod_val) % mod_val;
-    }
-    hash
+// USE SHA256 HASH FUNCTION INSTEAD
+
+pub fn hash_to_number(input: &str) -> BigNumber {
+    BigNumber::from_slice(digest(input))
 }
 
+// MPZ has a next prime
 // Function to find the next prime number greater than or equal to a given number
-fn next_prime(start: BigNumber) -> BigNumber {
+pub fn next_prime(start: BigNumber) -> BigNumber {
     let mut candidate = start;
     while !candidate.is_prime() {
         candidate = candidate + BigNumber::from(1);
@@ -22,17 +19,17 @@ fn next_prime(start: BigNumber) -> BigNumber {
 
 // 3 !!!!!      -----     (base?)
 
+// no exclude then?
+
 // Hash a string to a prime number
-pub fn map_string_to_prime(limit: BigNumber, exclude: BigNumber, input: &str) -> BigNumber {
-    // Base value of 31 is used for the polynomial hash function
-    let base = BigNumber::from(31);
-    let hash_value = polynomial_hash(input, base, &limit);
+pub fn map_string_to_prime(input: &str) -> BigNumber {
+    let hash_value = hash_to_number(input);
     let prime_candidate = next_prime(hash_value);
 
-    // Ensure the prime is not equal to the excluded prime
-    if prime_candidate == exclude {
-        return next_prime(prime_candidate + BigNumber::from(1));
-    }
+    // // Ensure the prime is not equal to the excluded prime
+    // if prime_candidate == exclude {
+    //     return next_prime(prime_candidate + BigNumber::from(1));
+    // }
 
     prime_candidate
 }
