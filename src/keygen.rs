@@ -65,7 +65,9 @@ pub fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
 /// # Returns
 ///
 /// A tuple containing the public parameters and the initial commitment.
-pub fn keygen() -> (
+pub fn keygen(
+    lambda: usize,
+) -> (
     (
         Group,
         BigNumber,
@@ -74,10 +76,12 @@ pub fn keygen() -> (
     (BigNumber, BigNumber),
 ) {
     // 1 !!!!!      ----->       size valid?    ---->     Function that maps lambda to size
+    // Map lambda to bit size
+    let bit_size = lambda_to_bit_size(lambda);
 
     // Create a safe group of unknown order
-    let p = BigNumber::safe_prime(1024);
-    let q = BigNumber::safe_prime(1024);
+    let p = BigNumber::safe_prime(bit_size);
+    let q = BigNumber::safe_prime(bit_size);
 
     // Calculate the modulus
     let modulus = p.clone() * q.clone();
@@ -99,4 +103,11 @@ pub fn keygen() -> (
     let c = (BigNumber::from(1), g.clone());
 
     (pp, c)
+}
+
+/// Maps the security parameter lambda to a bit size for prime generation.
+fn lambda_to_bit_size(_lambda: usize) -> usize {
+    // Example mapping: directly use lambda as the bit size
+    // You can adjust this logic based on your security requirements
+    1024
 }

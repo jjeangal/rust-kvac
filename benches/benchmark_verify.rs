@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-pub fn benchmark_verify(c: &mut Criterion) {
+pub fn benchmark_verify(_c: &mut Criterion) {
     //c.bench_function("verify", |b| b.iter(|| verify()));
 }
 

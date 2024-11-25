@@ -7,7 +7,7 @@ mod tests {
 
     #[test]
     fn test_keygen() {
-        let (pp, c) = keygen();
+        let (pp, c) = keygen(1024);
         let (group, g, _) = pp;
 
         assert!(g != BigNumber::zero(), "g should not be zero");
@@ -24,7 +24,7 @@ mod tests {
 
     #[test]
     fn test_sample_element_with_jacobi() {
-        let (pp, _) = keygen();
+        let (pp, _) = keygen(1024);
         let (group, _, _) = pp;
 
         // Test the sample_element_with_jacobi function

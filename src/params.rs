@@ -16,7 +16,7 @@ pub struct PublicParameters {
 
 // Lazy static variable to store your public parameters
 pub static PUBLIC_PARAMS: Lazy<PublicParameters> = Lazy::new(|| {
-    let result = keygen();
+    let result = keygen(1024);
     let ((_group, _g, _hash_fn), (_one, _g2)) = result;
 
     PublicParameters {
