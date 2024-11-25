@@ -8,19 +8,27 @@ fn main() {
     // Access the public parameters
     let pp = &PUBLIC_PARAMS;
 
-    // Insert a key-value pair
     let c = (pp.one.clone(), pp.g.clone());
     let (k, v) = ("test".to_string(), BigNumber::from(8));
 
-    let (new_c, proof_k, upd) = insert(c, (k, v));
-
-    // Update the proof
-    let st = "maybe".to_string();
-    let new_proof_k = proof_update(st, proof_k, upd.clone());
+    // Insert a key-value pair
+    let (new_c, proof_k, upd) = insert(c.clone(), (k.clone(), v.clone()));
 
     // Verify the proof
-    let ver = verify(new_c, upd, new_proof_k);
-    println!("Verification: {:?}", ver);
+    let ver1 = verify(new_c.clone(), upd.clone(), proof_k.clone());
+    println!("Verification 1: {:?}", ver1);
+
+    let (new_c2, _, upd2) = insert(new_c.clone(), (k.clone(), v.clone()));
+
+    // Update the proof
+    let updated_proof = proof_update(proof_k.clone(), (k.clone(), v.clone()));
+
+    // check updated proof is equal to c
+    println!("updated_proof == c ? {:?}", updated_proof == new_c);
+
+    // verify the updated proof
+    let ver2 = verify(new_c2.clone(), upd2.clone(), updated_proof);
+    println!("Verification for proof update: {:?}", ver2);
 }
 
 // a = 2^256
