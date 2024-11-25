@@ -18,10 +18,6 @@ name = "benchmark_insert"
 harness = false
 
 [[bench]]
-name = "benchmark_keygen"
-harness = false
-
-[[bench]]
 name = "benchmark_proof_update"
 harness = false
 
