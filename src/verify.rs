@@ -1,6 +1,16 @@
 use crate::params::PUBLIC_PARAMS;
 use unknown_order::BigNumber;
 
+/// Verifies the proof for a given key-value pair.
+///
+/// # Arguments
+///
+/// * `c` - A tuple representing the current commitment.
+/// * `(k, v)` - A tuple containing the key (as a string) and the value.
+/// * `proof_k` - A tuple representing the proof components.
+///
+/// # Returns
+///
 pub fn verify(
     c: (BigNumber, BigNumber),
     (k, v): (String, BigNumber),

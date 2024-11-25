@@ -58,7 +58,13 @@ fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
     }
 }
 
-// Key generation algorithm for Key Value Commitments (KVaC)
+// Add lambda parameter
+
+/// Generates the public parameters and the initial commitment.
+///
+/// # Returns
+///
+/// A tuple containing the public parameters and the initial commitment.
 pub fn keygen() -> (
     (
         Group,

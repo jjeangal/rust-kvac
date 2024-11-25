@@ -1,6 +1,18 @@
 use crate::params::PUBLIC_PARAMS;
 use unknown_order::*;
 
+// insert with empty key?
+
+/// Inserts a key-value pair into the commitment.
+///
+/// # Arguments
+///
+/// * `c` - A tuple representing the current commitment.
+/// * `(k, v)` - A tuple containing the key (as a string) and the value.
+///
+/// # Returns
+///
+/// A tuple containing the new commitment, the proof, and the update information.
 pub fn insert(
     c: (BigNumber, BigNumber),
     (k, v): (String, BigNumber),

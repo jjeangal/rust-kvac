@@ -1,8 +1,8 @@
 use crate::params::PUBLIC_PARAMS;
 use unknown_order::*;
 
-// String not used?
-// 1 !!!!!      -----       (string not used?)
+// String not used
+
 /// Updates the proof for a given key and update information.
 ///
 /// # Arguments
