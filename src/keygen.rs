@@ -11,7 +11,7 @@ fn is_even(bn: &BigNumber) -> bool {
     !is_odd(bn)
 }
 
-fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
+pub fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
     assert!(
         k > &BigNumber::from(0) && is_odd(k),
         "k must be positive and odd"
@@ -45,7 +45,7 @@ fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
     }
 }
 
-fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
+pub fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
     loop {
         // Generate a random element g from the group G^a
         let g = BigNumber::random(&modulus);
