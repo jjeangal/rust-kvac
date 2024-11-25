@@ -1,23 +1,26 @@
 use sha256::digest;
 use unknown_order::BigNumber;
 
-// USE SHA256 HASH FUNCTION INSTEAD
-
 pub fn hash_to_number(input: &str) -> BigNumber {
     BigNumber::from_slice(digest(input))
 }
 
 // MPZ has a next prime
-// Function to find the next prime number greater than or equal to a given number
 pub fn next_prime(start: BigNumber) -> BigNumber {
-    let mut candidate = start;
+    let two = BigNumber::from(2);
+    let mut candidate = if start <= two {
+        two.clone()
+    } else if &start % &two == BigNumber::from(0) {
+        start + BigNumber::from(1)
+    } else {
+        start
+    };
+
     while !candidate.is_prime() {
-        candidate = candidate + BigNumber::from(1);
+        candidate = candidate + two.clone();
     }
     candidate
 }
-
-// 3 !!!!!      -----     (base?)
 
 // no exclude then?
 
