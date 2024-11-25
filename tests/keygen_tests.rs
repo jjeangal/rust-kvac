@@ -3,8 +3,7 @@ use unknown_order::BigNumber;
 
 #[test]
 fn test_keygen() {
-    let lambda = 128;
-    let (pp, c) = keygen(lambda);
+    let (pp, c) = keygen();
 
     // Check that the public parameters are correctly generated
     let (group, g, hash_function) = pp;
