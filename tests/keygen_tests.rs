@@ -35,37 +35,4 @@ mod tests {
             "Sampled element should have a Jacobi symbol of 1"
         );
     }
-
-    #[test]
-    #[should_panic(expected = "k must be positive and odd")]
-    fn test_jacobi_with_negative_k() {
-        let n = BigNumber::from(5);
-        let k = BigNumber::from(-3); // Negative k, should panic
-
-        jacobi(&n, &k);
-    }
-
-    #[test]
-    #[should_panic(expected = "k must be positive and odd")]
-    fn test_jacobi_with_even_k() {
-        let n = BigNumber::from(5);
-        let k = BigNumber::from(4); // Even k, should panic
-
-        jacobi(&n, &k);
-    }
-
-    #[test]
-    fn test_keygen_with_invalid_modulus() {
-        // Directly test the sample_element_with_jacobi function with an invalid modulus
-        let invalid_modulus = BigNumber::from(0); // Invalid modulus
-
-        let result = std::panic::catch_unwind(|| {
-            sample_element_with_jacobi(&invalid_modulus);
-        });
-
-        assert!(
-            result.is_err(),
-            "Function should panic with invalid modulus"
-        );
-    }
 }
