@@ -45,13 +45,22 @@ fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
     }
 }
 
+fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
+    loop {
+        // Generate a random element g from the group G^a
+        let g = BigNumber::random(&modulus);
+
+        // Check the Jacobi symbol
+        let jacobi_symbol = jacobi(&g, &modulus);
+        if jacobi_symbol == 1 {
+            return g;
+        }
+    }
+}
+
 // Key generation algorithm for Key Value Commitments (KVaC)
-pub fn keygen(
-    lambda: usize,
-) -> (
+pub fn keygen() -> (
     (
-        // BigNumber,
-        // BigNumber,
         Group,
         BigNumber,
         Arc<dyn Fn(&str) -> BigNumber + Send + Sync>,
@@ -73,28 +82,15 @@ pub fn keygen(
     // // Get the exponent from the lambda
     // let exp = BigNumber::from(lambda);
 
-    // // 2 !!!!!    -----         (Group modulus?)
-
-    // let two = BigNumber::from(2);
-
-    // let a = BigNumber::from(two.clone()).modpow(&exp, &group.modulus);
-    // let b = BigNumber::from(two.clone()).modpow(&(exp + 1), &group.modulus);
-
-    // Create the hash function using map_string_to_prime
+    // Create the hash function
     let hash_function: Arc<dyn Fn(&str) -> BigNumber + Send + Sync> =
         { Arc::new(move |input: &str| map_string_to_prime(input)) };
 
-    // Generator g
-    let g = BigNumber::random(&group.modulus);
-
-    let symb = jacobi(&g, &group.modulus);
-
-    println!("symb: {:?}", symb);
+    let g = sample_element_with_jacobi(&group.modulus);
 
     // Create the public parameters
     let pp = (group, g.clone(), hash_function);
     let c = (BigNumber::from(1), g.clone());
 
-    // Return the public parameters
     (pp, c)
 }
