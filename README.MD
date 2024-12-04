@@ -1,8 +1,5 @@
-Rust Implementation of Key-Value Commitments
+# KVaC: Key-Value Commitments Implementation
 
-# Installation
+This repository contains an implementation of the KVaC (Key-Value Commitments) scheme, as described in the paper "KVaC: Key-Value Commitments for Blockchains and Beyond" by Shashank Agrawal and Srinivasan Raghuraman. The implementation is designed for benchmarking the performance of KVaC for proof creation and verification.
 
-## Cargo
-
-- Install the rust toolchain in order to have cargo installed:
-- run cargo install rust-kvac
+## In Progress
