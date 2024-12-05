@@ -13,7 +13,7 @@ use unknown_order::*;
 /// # Returns
 ///
 /// A tuple containing the updated proof components.
-pub fn proof_update(key: String, proof: Proof, update: Operation) -> Proof {
+pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proof, String> {
     // Access the public parameters
     let params = &*PUBLIC_PARAMS;
 
@@ -35,7 +35,7 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Proof {
             let new_proof = Proof::new(new_first, proof.second().clone(), new_uk);
 
             // Return the updated proof
-            new_proof
+            Ok(new_proof)
         }
         false => {
             // Compute the hash of the update key
@@ -43,7 +43,10 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Proof {
 
             // Compute α, β ∈ Z such that α · z + β · z_hat = 1
             let GcdResult { gcd, x: _, y } = &z.extended_gcd(&z_hat);
-            assert_eq!(gcd, &BigNumber::one(), "GCD is not 1");
+
+            if *gcd != BigNumber::one() {
+                return Err("GCD is not 1, z and z_hat are not coprime".to_string());
+            }
 
             // Compute γ = β · Λk,5 mod z
             let gamma = y.modmul(&proof.second().2, &z);
@@ -85,7 +88,7 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Proof {
             // Create the new proof
             let new_proof = Proof::new(proof_first, (new_k3, new_k4, gamma), proof.u_k().clone());
 
-            new_proof
+            Ok(new_proof)
         }
     }
 }
