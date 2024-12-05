@@ -3,6 +3,119 @@ use once_cell::sync::Lazy;
 use std::sync::Arc;
 use unknown_order::*;
 
+/// Represents a commitment with two components.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Commitment {
+    c1: BigNumber,
+    c2: BigNumber,
+}
+
+impl Commitment {
+    /// Creates a new `Commitment`.
+    ///
+    /// # Arguments
+    ///
+    /// * `c1` - The first component of the commitment.
+    /// * `c2` - The second component of the commitment.
+    ///
+    /// # Returns
+    ///
+    /// A new `Commitment` instance.
+    pub fn new(c1: BigNumber, c2: BigNumber) -> Self {
+        Self { c1, c2 }
+    }
+
+    /// Returns the first component of the commitment.
+    pub fn c1(&self) -> &BigNumber {
+        &self.c1
+    }
+
+    /// Returns the second component of the commitment.
+    pub fn c2(&self) -> &BigNumber {
+        &self.c2
+    }
+}
+
+/// Represents a proof with three components.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Proof {
+    pub first: Commitment,
+    pub second: (BigNumber, BigNumber, BigNumber),
+    pub u_k: BigNumber,
+}
+
+impl Proof {
+    /// Creates a new `Proof`.
+    ///
+    /// # Arguments
+    ///
+    /// * `first` - The first component of the proof.
+    /// * `second` - The second component of the proof.
+    /// * `u_k` - The third component of the proof.
+    ///
+    /// # Returns
+    ///
+    /// A new `Proof` instance.
+    pub fn new(
+        first: Commitment,
+        second: (BigNumber, BigNumber, BigNumber),
+        u_k: BigNumber,
+    ) -> Self {
+        Self { first, second, u_k }
+    }
+
+    /// Returns the first component of the proof.
+    pub fn first(&self) -> &Commitment {
+        &self.first
+    }
+
+    /// Returns the second component of the proof.
+    pub fn second(&self) -> &(BigNumber, BigNumber, BigNumber) {
+        &self.second
+    }
+
+    /// Returns the third component of the proof.
+    pub fn u_k(&self) -> &BigNumber {
+        &self.u_k
+    }
+}
+
+/// Represents the type of operation.
+#[derive(Debug, Clone, PartialEq)]
+pub enum OperationType {
+    Insert,
+    Update,
+}
+
+/// Represents an operation with a key-value pair.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Operation {
+    pub operation: OperationType,
+    pub key: String,
+    pub value: BigNumber,
+}
+
+impl Operation {
+    /// Creates a new `Operation`.
+    ///
+    /// # Arguments
+    ///
+    /// * `operation` - The type of operation (Insert or Update).
+    /// * `key` - The key as a string.
+    /// * `value` - The value as a `BigNumber`.
+    ///
+    /// # Returns
+    ///
+    /// A new `Operation` instance.
+    pub fn new(operation: OperationType, key: String, value: BigNumber) -> Self {
+        Self {
+            operation,
+            key,
+            value,
+        }
+    }
+}
+
 // Define your PublicParameters struct
 pub struct PublicParameters {
     // pub a: BigNumber,
