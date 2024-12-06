@@ -1,18 +1,17 @@
 use crate::params::*;
 use unknown_order::*;
 
-// String not used
-
 /// Updates the proof for a given key and update information.
 ///
 /// # Arguments
 ///
-/// * `proof_k` - A tuple representing the current proof components.
-/// * `upd` - A tuple containing the key (as a string) and the update value.
+/// * `key` - The key as a string.
+/// * `proof` - The current proof.
+/// * `update` - The operation containing the key-value pair.
 ///
 /// # Returns
 ///
-/// A tuple containing the updated proof components.
+/// A `Result` containing the updated proof or an error message.
 pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proof, String> {
     // Access the public parameters
     let params = &*PUBLIC_PARAMS;
@@ -22,6 +21,9 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proo
 
     match update.key == key {
         true => {
+            // First Case: Update when keys match
+            // ----------------------------------
+
             // Calculate C2^z mod modulus
             let k2_z = proof.first().c2().modpow(&z, &params.group.modulus);
 
@@ -38,13 +40,16 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proo
             Ok(new_proof)
         }
         false => {
+            // Second Case: Update when keys do not match
+            // ------------------------------------------
+
             // Compute the hash of the update key
             let z_hat = (params.hash_function)(&update.key);
 
             // Compute α, β ∈ Z such that α · z + β · z_hat = 1
-            let GcdResult { gcd, x: _, y } = &z.extended_gcd(&z_hat);
+            let GcdResult { gcd, x: _, y } = z.extended_gcd(&z_hat);
 
-            if *gcd != BigNumber::one() {
+            if gcd != BigNumber::one() {
                 return Err("GCD is not 1, z and z_hat are not coprime".to_string());
             }
 
@@ -81,13 +86,14 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proo
             // Compute the new k3 = k3^z_hat
             let new_k3 = proof.second().0.modpow(&z_hat, &params.group.modulus);
 
-            // Computer the new k4 = k4 · k3^η
+            // Compute the new k4 = k4 · k3^η
             let k3_eta = proof.second().0.modpow(&eta, &params.group.modulus);
             let new_k4 = proof.second().1.modmul(&k3_eta, &params.group.modulus);
 
             // Create the new proof
             let new_proof = Proof::new(proof_first, (new_k3, new_k4, gamma), proof.u_k().clone());
 
+            // Return the updated proof
             Ok(new_proof)
         }
     }
