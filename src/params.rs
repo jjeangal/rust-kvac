@@ -114,6 +114,16 @@ impl Operation {
             value,
         }
     }
+
+    /// Returns the key of the operation.
+    pub fn key(&self) -> &String {
+        &self.key
+    }
+
+    /// Returns the value of the operation.
+    pub fn value(&self) -> &BigNumber {
+        &self.value
+    }
 }
 
 // Define your PublicParameters struct
