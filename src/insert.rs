@@ -16,7 +16,7 @@ use unknown_order::*;
 pub fn insert(
     commmitment: Commitment,
     (key, value): (String, BigNumber),
-) -> (Commitment, Proof, Operation) {
+) -> (Commitment, Proof, KeyValue) {
     // Access the public parameters
     let params = &*PUBLIC_PARAMS;
 
@@ -42,7 +42,7 @@ pub fn insert(
     );
 
     // Create the operation record
-    let operation = Operation::new(OperationType::Insert, key, value);
+    let operation = KeyValue::new(key, value);
 
     (new_commitment, new_proof, operation)
 }
