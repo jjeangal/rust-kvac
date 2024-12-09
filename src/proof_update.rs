@@ -12,14 +12,14 @@ use unknown_order::*;
 /// # Returns
 ///
 /// A `Result` containing the updated proof or an error message.
-pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proof, String> {
+pub fn proof_update(key: String, proof: Proof, op: Operation) -> Result<Proof, String> {
     // Access the public parameters
     let params = &*PUBLIC_PARAMS;
 
     // Compute the hash of the key
     let z = (params.hash_function)(&key);
 
-    match update.key == key {
+    match op.key == key {
         true => {
             // First Case: Update when keys match
             // ----------------------------------
@@ -44,7 +44,7 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proo
             // ------------------------------------------
 
             // Compute the hash of the update key
-            let z_hat = (params.hash_function)(&update.key);
+            let z_hat = (params.hash_function)(&op.key);
 
             // Compute α, β ∈ Z such that α · z + β · z_hat = 1
             let GcdResult { gcd, x: _, y } = z.extended_gcd(&z_hat);
@@ -69,10 +69,7 @@ pub fn proof_update(key: String, proof: Proof, update: Operation) -> Result<Proo
             // Compute the new first commitment
             // C1^z_hat · C2^v mod modulus
             let k1_z_hat = proof.first().c1().modpow(&z_hat, &params.group.modulus);
-            let k2_z_upd_val = proof
-                .first()
-                .c2()
-                .modpow(&update.value, &params.group.modulus);
+            let k2_z_upd_val = proof.first().c2().modpow(&op.value, &params.group.modulus);
 
             // Compute the new k1 = C1^z_hat · C2^v
             let new_k1 = k1_z_hat.modmul(&k2_z_upd_val, &params.group.modulus);
