@@ -80,22 +80,14 @@ impl Proof {
     }
 }
 
-/// Represents the type of operation.
-#[derive(Debug, Clone, PartialEq)]
-pub enum OperationType {
-    Insert,
-    Update,
-}
-
 /// Represents an operation with a key-value pair.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Operation {
-    pub operation: OperationType,
+pub struct KeyValue {
     pub key: String,
     pub value: BigNumber,
 }
 
-impl Operation {
+impl KeyValue {
     /// Creates a new `Operation`.
     ///
     /// # Arguments
@@ -107,12 +99,8 @@ impl Operation {
     /// # Returns
     ///
     /// A new `Operation` instance.
-    pub fn new(operation: OperationType, key: String, value: BigNumber) -> Self {
-        Self {
-            operation,
-            key,
-            value,
-        }
+    pub fn new(key: String, value: BigNumber) -> Self {
+        Self { key, value }
     }
 
     /// Returns the key of the operation.
