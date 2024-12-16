@@ -13,36 +13,30 @@ use unknown_order::*;
 /// # Returns
 ///
 /// A tuple containing the new commitment, the proof, and the update information.
-pub fn insert(
-    commmitment: Commitment,
-    (key, value): (String, BigNumber),
-) -> (Commitment, Proof, KeyValue) {
-    // Access the public parameters
+pub fn insert(commitment: Commitment, kv: KeyValue) -> (Commitment, Proof, KeyValue) {
     let params = &*PUBLIC_PARAMS;
+    let z = (params.hash_function)(kv.key());
+    println!("Insert - z: {:?}", z);
 
-    // Calculate z using the hash function
-    let z = (params.hash_function)(&key);
+    // First create the proof with original commitment
+    // Λk = ((C1, C2),(g, 1, 1), 0)
+    let proof = Proof::new(
+        commitment.clone(),                                     // Original (C1, C2)
+        (params.g.clone(), BigNumber::one(), BigNumber::one()), // (g, 1, 1)
+        BigNumber::zero(),                                      // uk = 0
+    );
+    println!("Insert - initial proof: {:?}", proof);
 
-    // Calculate C1^z mod modulus and C2^v mod modulus
-    let c1_z = commmitment.c1().modpow(&z, &params.group.modulus);
-    let c2_v = commmitment.c2().modpow(&value, &params.group.modulus);
-
-    // Calculate C2^z mod modulus
-    let c2_z = commmitment.c2().modpow(&z, &params.group.modulus);
-
-    // C = (C1^z * C2^v, C2^z)
-    let new_c1 = c1_z.clone().modmul(&c2_v, &params.group.modulus);
-    let new_commitment = Commitment::new(new_c1, c2_z);
-
-    // Create the proof
-    let new_proof = Proof::new(
-        commmitment,
-        (params.g.clone(), BigNumber::one(), BigNumber::one()),
-        BigNumber::zero(),
+    // Then calculate new commitment C = (C1^z * C2^v, C2^z)
+    let new_c2 = commitment.c2().modpow(&z, &params.group.modulus);
+    let new_c1 = commitment.c1().modpow(&z, &params.group.modulus).modmul(
+        &commitment.c2().modpow(kv.value(), &params.group.modulus),
+        &params.group.modulus,
     );
 
-    // Create the operation record
-    let operation = KeyValue::new(key, value);
+    let new_commitment = Commitment::new(new_c1, new_c2);
+    println!("Insert - new_c1: {:?}", new_commitment.c1());
+    println!("Insert - new_c2: {:?}", new_commitment.c2());
 
-    (new_commitment, new_proof, operation)
+    (new_commitment, proof, kv)
 }
