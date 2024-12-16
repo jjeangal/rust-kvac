@@ -9,40 +9,26 @@ fn main() {
     // Access the public parameters
     let pp = &PUBLIC_PARAMS;
 
+    // Initialize the initial commitment
     let commitment = Commitment::new(pp.one.clone(), pp.g.clone());
-    let key = "test".to_string();
-    let value = BigNumber::from(8);
-    let value2 = BigNumber::from(10);
 
-    //#########################################################
-    // Test inserts
-    //#########################################################
+    // Define keys and values
+    let kv1: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
+    let kv2: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(10));
 
-    // Insert a key-value pair
-    let (commitment2, proof_k, op1) = insert(commitment, (key.clone(), value.clone()));
+    // Insert the first key-value pair
+    let (commitment2, proof_k1, kv1) = insert(commitment.clone(), kv1.clone());
 
-    // Verify the proof
-    let verify_insert_1 = verify(
-        commitment2.clone(),
-        (op1.key().clone(), op1.value().clone()),
-        proof_k.clone(),
-    );
-    println!("First insert verification: {:?}", verify_insert_1);
+    // Verify the first insert
+    let verify_insert = verify(commitment2.clone(), kv1.clone(), proof_k1.clone());
+    println!("First insert verification: {:?}", verify_insert);
 
-    // Update the key-value pair
-    let (new_c2, op2) = update(commitment2.clone(), (key.clone(), value2.clone()));
+    // Update the first key-value pair
+    let (commitment3, kv2) = update(commitment2.clone(), kv2.clone());
 
-    // Update the proof
-    let updated_proof = proof_update(key.clone(), proof_k, op2.clone()).unwrap_or_else(|e| {
-        println!("Error updating proof: {:?}", e);
-        std::process::exit(1);
-    });
+    let proof_upd: Proof = proof_update(kv1.key, proof_k1, kv2.clone()).unwrap();
 
-    // Verify the updated proof
-    let verify_insert_2 = verify(
-        new_c2.clone(),
-        (op2.key().clone(), op2.value().clone()),
-        updated_proof.clone(),
-    );
-    println!("Second insert verification: {:?}", verify_insert_2);
+    // Verify the second insert
+    let verify_update = verify(commitment3.clone(), kv2.clone(), proof_upd.clone());
+    println!("Second verification: {:?}", verify_update);
 }
