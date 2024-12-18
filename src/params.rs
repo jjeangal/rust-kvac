@@ -1,13 +1,24 @@
 use crate::keygen::keygen;
 use once_cell::sync::Lazy;
+use std::fmt;
 use std::sync::Arc;
 use unknown_order::*;
 
-/// Represents a commitment with two components.
+// Add this helper function at the top of the file
+pub fn format_bignumber(bn: &BigNumber) -> String {
+    let s = format!("{:?}", bn);
+    if s.len() > 20 {
+        format!("{}...{}", &s[..10], &s[s.len() - 10..])
+    } else {
+        s
+    }
+}
+
+/// Represents a commitment (C1, C2)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Commitment {
-    c1: BigNumber,
-    c2: BigNumber,
+    pub c1: BigNumber, // C1
+    pub c2: BigNumber, // C2
 }
 
 impl Commitment {
@@ -36,12 +47,24 @@ impl Commitment {
     }
 }
 
-/// Represents a proof with three components.
+// Implement Display for Commitment
+impl fmt::Display for Commitment {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Commitment {{\n    c1: {}\n    c2: {}\n}}",
+            format_bignumber(&self.c1),
+            format_bignumber(&self.c2)
+        )
+    }
+}
+
+/// Represents a proof Λk = ((Λk,1,Λk,2),(Λk,3,Λk,4,Λk,5), uk)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Proof {
-    pub first: Commitment,
-    pub second: (BigNumber, BigNumber, BigNumber),
-    pub u_k: BigNumber,
+    pub lambda_k: Commitment,                          // (Λk,1,Λk,2)
+    pub lambda_aux: (BigNumber, BigNumber, BigNumber), // (Λk,3,Λk,4,Λk,5)
+    pub uk: BigNumber,                                 // uk
 }
 
 impl Proof {
@@ -49,34 +72,53 @@ impl Proof {
     ///
     /// # Arguments
     ///
-    /// * `first` - The first component of the proof.
-    /// * `second` - The second component of the proof.
-    /// * `u_k` - The third component of the proof.
+    /// * `lambda_k` - The first component of the proof.
+    /// * `lambda_aux` - The second component of the proof.
+    /// * `uk` - The third component of the proof.
     ///
     /// # Returns
     ///
     /// A new `Proof` instance.
     pub fn new(
-        first: Commitment,
-        second: (BigNumber, BigNumber, BigNumber),
-        u_k: BigNumber,
+        lambda_k: Commitment,
+        lambda_aux: (BigNumber, BigNumber, BigNumber),
+        uk: BigNumber,
     ) -> Self {
-        Self { first, second, u_k }
+        Self {
+            lambda_k,
+            lambda_aux,
+            uk,
+        }
     }
 
     /// Returns the first component of the proof.
-    pub fn first(&self) -> &Commitment {
-        &self.first
+    pub fn lambda_k(&self) -> &Commitment {
+        &self.lambda_k
     }
 
     /// Returns the second component of the proof.
-    pub fn second(&self) -> &(BigNumber, BigNumber, BigNumber) {
-        &self.second
+    pub fn lambda_aux(&self) -> &(BigNumber, BigNumber, BigNumber) {
+        &self.lambda_aux
     }
 
     /// Returns the third component of the proof.
-    pub fn u_k(&self) -> &BigNumber {
-        &self.u_k
+    pub fn uk(&self) -> &BigNumber {
+        &self.uk
+    }
+}
+
+// Implement Display for Proof
+impl fmt::Display for Proof {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Proof {{\n    lambda_k: {}\n    lambda_aux: (\n        {}\n        {}\n        {}\n    )\n    uk: {}\n}}",
+            self.lambda_k,
+            format_bignumber(&self.lambda_aux.0),  // Λk,3
+            format_bignumber(&self.lambda_aux.1),  // Λk,4
+            format_bignumber(&self.lambda_aux.2),  // Λk,5
+            format_bignumber(&self.uk)
+        )
     }
 }
 
@@ -111,6 +153,18 @@ impl KeyValue {
     /// Returns the value of the operation.
     pub fn value(&self) -> &BigNumber {
         &self.value
+    }
+}
+
+// Implement Display for KeyValue
+impl fmt::Display for KeyValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "KeyValue {{\n    key: \"{}\"\n    value: {}\n}}",
+            self.key,
+            format_bignumber(&self.value)
+        )
     }
 }
 
