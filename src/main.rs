@@ -15,20 +15,22 @@ fn main() {
     // Define keys and values
     let kv1: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
     let kv2: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(10));
+    let kv3: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(18));
 
     // Insert the first key-value pair
-    let (commitment2, proof_k1, kv1) = insert(commitment.clone(), kv1.clone());
+    let (commitment2, proof, kv1) = insert(&commitment, &kv1);
 
     // Verify the first insert
-    let verify_insert = verify(commitment2.clone(), kv1.clone(), proof_k1.clone());
+    let verify_insert = verify(&commitment2, &kv1, &proof);
     println!("First insert verification: {:?}", verify_insert);
 
     // Update the first key-value pair
-    let (commitment3, kv2) = update(commitment2.clone(), kv2.clone());
+    let (commitment3, kv2) = update(&commitment2, &kv2);
 
-    let proof_upd: Proof = proof_update(kv1.key, proof_k1, kv2.clone()).unwrap();
+    // Update proof_k1 in place
+    let proof_update = proof_update(kv1.key(), &proof, &kv2).unwrap();
 
-    // Verify the second insert
-    let verify_update = verify(commitment3.clone(), kv2.clone(), proof_upd.clone());
+    // Use the updated proof
+    let verify_update = verify(&commitment3, &kv3, &proof_update);
     println!("Second verification: {:?}", verify_update);
 }
