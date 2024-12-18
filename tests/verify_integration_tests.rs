@@ -24,7 +24,10 @@ mod tests {
         let result = verify(&new_c, &op, &proof_k);
 
         // Assert that the verification is successful
-        assert!(result, "Verification should succeed with generated data");
+        assert!(
+            result.is_ok(),
+            "Verification should succeed with generated data"
+        );
     }
 
     #[test]
@@ -40,7 +43,10 @@ mod tests {
         ); // Dummy proof
 
         let result = verify(&invalid_commitment, &kv, &proof);
-        assert!(!result, "Verification should fail with invalid commitment");
+        assert!(
+            result.is_err(),
+            "Verification should fail with invalid commitment"
+        );
     }
 
     #[test]
@@ -55,7 +61,10 @@ mod tests {
         ); // Invalid proof
 
         let result = verify(&valid_commitment, &kv, &invalid_proof);
-        assert!(!result, "Verification should fail with invalid proof");
+        assert!(
+            result.is_err(),
+            "Verification should fail with invalid proof"
+        );
     }
 
     #[test]
@@ -71,7 +80,7 @@ mod tests {
 
         let result = verify(&valid_commitment, &kv, &proof);
         assert!(
-            !result,
+            result.is_err(),
             "Verification should fail with invalid key-value pair"
         );
     }

@@ -23,10 +23,10 @@ mod tests {
         let (_, mut proof_k, upd) = insert(&mut commitment, &kv);
 
         // Update the proof
-        let new_proof_k = proof_update(&kv.key, &mut proof_k, &upd);
+        let new_proof_k = proof_update(&kv.key, &mut proof_k, &upd).unwrap();
 
         // Consistency check: applying the same update should yield the same result
-        let new_proof_k_again = proof_update(&kv.key, &mut proof_k, &upd);
+        let new_proof_k_again = proof_update(&kv.key, &mut proof_k, &upd).unwrap();
         assert_eq!(
             new_proof_k, new_proof_k_again,
             "Proof update should be consistent"
