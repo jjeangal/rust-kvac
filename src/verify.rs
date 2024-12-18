@@ -1,3 +1,4 @@
+use crate::error::ProofError;
 use crate::params::*;
 use unknown_order::BigNumber;
 
@@ -12,7 +13,7 @@ use unknown_order::BigNumber;
 /// # Returns
 ///
 /// `true` if the proof is valid, `false` otherwise.
-pub fn verify(commitment: &Commitment, kv: &KeyValue, proof: &Proof) -> bool {
+pub fn verify(commitment: &Commitment, kv: &KeyValue, proof: &Proof) -> Result<(), ProofError> {
     let params = &*PUBLIC_PARAMS;
     let z = (params.hash_function)(kv.key());
 
@@ -20,8 +21,9 @@ pub fn verify(commitment: &Commitment, kv: &KeyValue, proof: &Proof) -> bool {
     let lambda_k2_z = proof.lambda_k().c2().modpow(&z, &params.group.modulus);
 
     if lambda_k2_z != *commitment.c2() {
-        println!("First Check: (Λk,2)^z != C2");
-        return false;
+        return Err(ProofError::InvalidProof(
+            "First Check: (Λk,2)^z != C2".to_string(),
+        ));
     }
 
     // Second Check: (Λk,1)^(z^(uk+1)) * (Λk,2)^v = C1
@@ -42,8 +44,9 @@ pub fn verify(commitment: &Commitment, kv: &KeyValue, proof: &Proof) -> bool {
     let result = lambda_k1_z_uk_plus_1.modmul(&lambda_k2_v, &params.group.modulus);
 
     if result != *commitment.c1() {
-        println!("Second Check: (Λk,1)^(z^(uk + 1)) * (Λk,2)^v != C1");
-        return false;
+        return Err(ProofError::InvalidProof(
+            "Second Check: (Λk,1)^(z^(uk + 1)) * (Λk,2)^v != C1".to_string(),
+        ));
     }
 
     // Third Check
@@ -53,8 +56,9 @@ pub fn verify(commitment: &Commitment, kv: &KeyValue, proof: &Proof) -> bool {
         .modpow(&z_uk_plus_1, &params.group.modulus);
 
     if lambda_k3_z_uk_plus_1 != *commitment.c2() {
-        println!("Third Check: (Λk,3)^(z^(uk + 1)) != C2");
-        return false;
+        return Err(ProofError::InvalidProof(
+            "Third Check: (Λk,3)^(z^(uk + 1)) != C2".to_string(),
+        ));
     }
 
     // Fourth Check
@@ -66,9 +70,10 @@ pub fn verify(commitment: &Commitment, kv: &KeyValue, proof: &Proof) -> bool {
         .modpow(&proof.lambda_aux().2, &params.group.modulus);
 
     if lambda_k4_z.modmul(&lambda_k3_lambda_k5, &params.group.modulus) != params.g {
-        println!("Fourth Check: (Λk,4)^z * (Λk,3)^(Λk,5) != g");
-        return false;
+        return Err(ProofError::InvalidProof(
+            "Fourth Check: (Λk,4)^z * (Λk,3)^(Λk,5) != g".to_string(),
+        ));
     }
 
-    true
+    Ok(())
 }
