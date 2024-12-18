@@ -1,3 +1,4 @@
+use crate::error::ProofError;
 use crate::params::*;
 use unknown_order::*;
 
@@ -12,7 +13,7 @@ use unknown_order::*;
 /// # Returns
 ///
 /// A `Result` containing the updated proof or an error message.
-pub fn proof_update(key: &String, proof: &Proof, kv: &KeyValue) -> Result<Proof, String> {
+pub fn proof_update(key: &String, proof: &Proof, kv: &KeyValue) -> Result<Proof, ProofError> {
     let params = &*PUBLIC_PARAMS;
     let z = (params.hash_function)(&key);
 
@@ -28,23 +29,21 @@ pub fn proof_update(key: &String, proof: &Proof, kv: &KeyValue) -> Result<Proof,
             let new_lambda_k = Commitment::new(proof.lambda_k().c1().clone(), k2_z);
 
             // Create new proof with updated components
-            let new_proof = Proof::new(
+            Ok(Proof::new(
                 new_lambda_k.clone(),
                 proof.lambda_aux().clone(), // (Λk,3,Λk,4,Λk,5) stays the same
                 proof.uk() + BigNumber::one(),
-            );
-
-            Ok(new_proof)
+            ))
         }
         false => {
             // Case where upd2 ≠ k (different key update)
             let z_hat = (params.hash_function)(kv.key());
 
             // Compute α, β ∈ Z such that α · z + β · z_hat = 1
-            let GcdResult { gcd, x: _, y: beta } = z.extended_gcd(&z_hat);
+            let GcdResult { gcd, y: beta, .. } = z.extended_gcd(&z_hat);
 
             if gcd != BigNumber::one() {
-                return Err("GCD is not 1, z and z_hat are not coprime".to_string());
+                return Err(ProofError::NonCoprimePair);
             }
 
             // Compute γ = β · Λk,5 mod z
@@ -76,13 +75,11 @@ pub fn proof_update(key: &String, proof: &Proof, kv: &KeyValue) -> Result<Proof,
                 &params.group.modulus,
             );
 
-            let new_proof = Proof::new(
+            Ok(Proof::new(
                 Commitment::new(new_k1, new_k2),
                 (new_k3, new_k4, gamma),
                 proof.uk().clone(),
-            );
-
-            Ok(new_proof)
+            ))
         }
     }
 }
