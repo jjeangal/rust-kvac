@@ -83,3 +83,16 @@ pub fn proof_update(key: &String, proof: &Proof, kv: &KeyValue) -> Result<Proof,
         }
     }
 }
+
+// Add new batch function
+pub fn batch_proof_update(
+    key: &String,
+    initial_proof: &Proof,
+    updates: &[KeyValue],
+) -> Result<Proof, ProofError> {
+    let mut current_proof = initial_proof.clone();
+    for kv in updates {
+        current_proof = proof_update(key, &current_proof, kv)?;
+    }
+    Ok(current_proof)
+}
