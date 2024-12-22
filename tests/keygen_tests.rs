@@ -1,13 +1,12 @@
-use rust_kvac::keygen::*;
-use unknown_order::BigNumber;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use rust_kvac::error::CryptoError;
+    use rust_kvac::keygen::*;
+    use unknown_order::BigNumber;
 
     #[test]
     fn test_keygen() {
-        let (pp, c) = keygen(1024);
+        let (pp, c) = keygen(1024).unwrap();
         let (group, g, _) = pp;
 
         assert!(g != BigNumber::zero(), "g should not be zero");
@@ -23,49 +22,39 @@ mod tests {
     }
 
     #[test]
+    fn test_jacobi_with_negative_k() {
+        let n = BigNumber::from(5);
+        let k = BigNumber::from(-3);
+        let result = jacobi(&n, &k);
+        assert!(matches!(result, Err(CryptoError::InvalidJacobiInput(_))));
+    }
+
+    #[test]
+    fn test_jacobi_with_even_k() {
+        let n = BigNumber::from(5);
+        let k = BigNumber::from(4); // Even k
+        let result = jacobi(&n, &k);
+        assert!(matches!(result, Err(CryptoError::InvalidJacobiInput(_))));
+    }
+
+    #[test]
     fn test_sample_element_with_jacobi() {
-        let (pp, _) = keygen(1024);
+        let (pp, _) = keygen(1024).unwrap();
         let (group, _, _) = pp;
 
-        // Test the sample_element_with_jacobi function
-        let g = sample_element_with_jacobi(&group.modulus);
+        let g = sample_element_with_jacobi_safe(&group.modulus).unwrap();
         assert_eq!(
-            jacobi(&g, &group.modulus),
+            jacobi(&g, &group.modulus).unwrap(),
             1,
             "Sampled element should have a Jacobi symbol of 1"
         );
     }
 
     #[test]
-    #[should_panic(expected = "k must be positive and odd")]
-    fn test_jacobi_with_negative_k() {
-        let n = BigNumber::from(5);
-        let k = BigNumber::from(-3); // Negative k, should panic
-
-        jacobi(&n, &k);
-    }
-
-    #[test]
-    #[should_panic(expected = "k must be positive and odd")]
-    fn test_jacobi_with_even_k() {
-        let n = BigNumber::from(5);
-        let k = BigNumber::from(4); // Even k, should panic
-
-        jacobi(&n, &k);
-    }
-
-    #[test]
     fn test_keygen_with_invalid_modulus() {
-        // Directly test the sample_element_with_jacobi function with an invalid modulus
-        let invalid_modulus = BigNumber::from(0); // Invalid modulus
+        let invalid_modulus = BigNumber::from(0);
+        let result = sample_element_with_jacobi_safe(&invalid_modulus);
 
-        let result = std::panic::catch_unwind(|| {
-            sample_element_with_jacobi(&invalid_modulus);
-        });
-
-        assert!(
-            result.is_err(),
-            "Function should panic with invalid modulus"
-        );
+        assert!(matches!(result, Err(CryptoError::InvalidGroup(_))));
     }
 }

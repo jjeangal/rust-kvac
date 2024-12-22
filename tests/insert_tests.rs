@@ -1,7 +1,4 @@
-extern crate rust_kvac;
-
 mod tests {
-    use super::*;
     use rust_kvac::insert::insert;
     use rust_kvac::params::Commitment;
     use rust_kvac::params::KeyValue;

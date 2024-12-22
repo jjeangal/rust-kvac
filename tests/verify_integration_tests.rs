@@ -1,8 +1,5 @@
-extern crate rust_kvac;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rust_kvac::insert::insert;
     use rust_kvac::params::*;
     use rust_kvac::verify::verify;

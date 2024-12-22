@@ -1,8 +1,5 @@
-extern crate rust_kvac;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rust_kvac::insert::insert;
     use rust_kvac::params::*;
     use rust_kvac::proof_update::proof_update;
@@ -23,10 +20,10 @@ mod tests {
         let (_, mut proof_k, upd) = insert(&mut commitment, &kv);
 
         // Update the proof
-        let new_proof_k = proof_update(&kv.key, &mut proof_k, &upd).unwrap();
+        let new_proof_k = proof_update(&kv.key(), &mut proof_k, &upd).unwrap();
 
         // Consistency check: applying the same update should yield the same result
-        let new_proof_k_again = proof_update(&kv.key, &mut proof_k, &upd).unwrap();
+        let new_proof_k_again = proof_update(&kv.key(), &mut proof_k, &upd).unwrap();
         assert_eq!(
             new_proof_k, new_proof_k_again,
             "Proof update should be consistent"
@@ -55,7 +52,7 @@ mod tests {
         // Update the first key-value pair
         let (commitment3, kv2) = update(&commitment2, &kv2);
 
-        let proof_upd: Proof = proof_update(&kv1.key, &mut proof_k1, &kv2).unwrap();
+        let proof_upd: Proof = proof_update(&kv1.key(), &mut proof_k1, &kv2).unwrap();
 
         // Verify the second insert
         let verify_update = verify(&commitment3, &kv3, &proof_upd);

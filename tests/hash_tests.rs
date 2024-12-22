@@ -1,8 +1,6 @@
-use rust_kvac::group_hash_function::{map_string_to_prime, next_prime};
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use rust_kvac::group_hash_function::*;
     use unknown_order::BigNumber;
 
     #[test]
