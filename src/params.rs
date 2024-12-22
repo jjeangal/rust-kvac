@@ -125,8 +125,8 @@ impl fmt::Display for Proof {
 /// Represents an operation with a key-value pair.
 #[derive(Debug, Clone, PartialEq)]
 pub struct KeyValue {
-    pub key: String,
-    pub value: BigNumber,
+    key: String,
+    value: BigNumber,
 }
 
 impl KeyValue {
@@ -142,6 +142,8 @@ impl KeyValue {
     ///
     /// A new `Operation` instance.
     pub fn new(key: String, value: BigNumber) -> Self {
+        assert!(!key.is_empty(), "Key must be a non-empty binary string");
+
         Self { key, value }
     }
 
@@ -182,7 +184,7 @@ pub struct PublicParameters {
 // Lazy static variable to store your public parameters
 pub static PUBLIC_PARAMS: Lazy<PublicParameters> = Lazy::new(|| {
     let result = keygen(1024);
-    let ((_group, _g, _hash_fn), (_one, _g2)) = result;
+    let ((_group, _g, _hash_fn), (_one, _g2)) = result.expect("Keygen failed");
 
     PublicParameters {
         // a: _a,
