@@ -3,7 +3,7 @@ use rust_kvac::params::*;
 use unknown_order::BigNumber;
 
 // Pre-generated test vectors with different sizes
-pub static KEYS_1K: Lazy<Vec<KeyValue>> = Lazy::new(|| generate_key_values(1_000));
+pub static KEYS_10K: Lazy<Vec<KeyValue>> = Lazy::new(|| generate_key_values(10_000));
 
 // Same key, different values
 pub static SAME_KEY_VALUES_10K: Lazy<Vec<KeyValue>> =

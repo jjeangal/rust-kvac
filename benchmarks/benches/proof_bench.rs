@@ -1,4 +1,4 @@
-use crate::benches::utils::{initial_commitment, KEYS_1K, SAME_KEY_VALUES_10K};
+use crate::benches::utils::{initial_commitment, KEYS_10K, SAME_KEY_VALUES_10K};
 use criterion::{black_box, criterion_group, BatchSize, BenchmarkId, Criterion};
 use rust_kvac::insert::insert;
 use rust_kvac::proof_update::proof_update;
@@ -43,24 +43,25 @@ pub fn benchmark_proof_same_key(c: &mut Criterion) {
 pub fn benchmark_proof_different_key(c: &mut Criterion) {
     let mut group = c.benchmark_group("proof_different_key");
 
-    let initial_kv = &KEYS_1K[0];
+    let initial_kv = &KEYS_10K[0];
     let initial_commitment = initial_commitment();
     let (_, proof, _) = insert(&initial_commitment, initial_kv);
 
     // Single update with different key
     group.bench_function("single_update", |b| {
-        b.iter(|| black_box(proof_update(&KEYS_1K[0].key(), &proof, &KEYS_1K[1])))
+        b.iter(|| black_box(proof_update(&KEYS_10K[0].key(), &proof, &KEYS_10K[1])))
     });
 
     // Sequential updates with different keys
-    for size in [10, 100, 1000].iter() {
+    for size in [100, 500, 1000].iter() {
         group.bench_with_input(BenchmarkId::new("sequential", size), size, |b, &updates| {
             b.iter_batched(
                 || proof.clone(),
                 |mut prf| {
-                    for kv in KEYS_1K.iter().take(updates).skip(1) {
+                    for kv in KEYS_10K.iter().take(updates).skip(1) {
                         prf = black_box(
-                            proof_update(&KEYS_1K[0].key(), &prf, kv).expect("Proof update failed"),
+                            proof_update(&KEYS_10K[0].key(), &prf, kv)
+                                .expect("Proof update failed"),
                         );
                     }
                 },

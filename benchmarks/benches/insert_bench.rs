@@ -1,4 +1,4 @@
-use crate::benches::utils::{initial_commitment, KEYS_1K};
+use crate::benches::utils::{initial_commitment, KEYS_10K};
 use criterion::{black_box, criterion_group, BatchSize, BenchmarkId, Criterion};
 use rust_kvac::insert::insert;
 
@@ -7,7 +7,7 @@ fn benchmark_insert_scaling(c: &mut Criterion) {
 
     for size in [100, 500, 1000].iter() {
         let mut initial_commitment = initial_commitment();
-        for kv in KEYS_1K.iter().take(*size) {
+        for kv in KEYS_10K.iter().take(*size) {
             let (new_commitment, _, _) = insert(&initial_commitment, kv);
             initial_commitment = new_commitment;
         }
@@ -17,7 +17,7 @@ fn benchmark_insert_scaling(c: &mut Criterion) {
                 || initial_commitment.clone(),
                 |commitment| {
                     let mut current = commitment;
-                    for kv in KEYS_1K.iter().skip(size).take(100) {
+                    for kv in KEYS_10K.iter().skip(size).take(100) {
                         let (new_commitment, _, _) = black_box(insert(&current, kv));
                         current = new_commitment;
                     }
