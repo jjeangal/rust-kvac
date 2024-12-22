@@ -16,7 +16,6 @@ use unknown_order::*;
 pub fn insert(commitment: &Commitment, kv: &KeyValue) -> (Commitment, Proof, KeyValue) {
     let params = &*PUBLIC_PARAMS;
     let z = (params.hash_function)(kv.key());
-    println!("\nInsert Operation:");
 
     // First create the proof with original commitment
     // Λk = ((C1, C2),(g, 1, 1), 0)
