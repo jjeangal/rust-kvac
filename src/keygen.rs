@@ -1,3 +1,4 @@
+use crate::error::CryptoError;
 use crate::group_hash_function::map_string_to_prime;
 use std::sync::Arc;
 use unknown_order::*;
@@ -11,11 +12,12 @@ fn is_even(bn: &BigNumber) -> bool {
     !is_odd(bn)
 }
 
-pub fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
-    assert!(
-        k > &BigNumber::from(0) && is_odd(k),
-        "k must be positive and odd"
-    );
+pub fn jacobi(n: &BigNumber, k: &BigNumber) -> Result<i32, CryptoError> {
+    if k <= &BigNumber::from(0) || is_even(k) {
+        return Err(CryptoError::InvalidJacobiInput(
+            "k must be positive and odd".to_string(),
+        ));
+    }
 
     let mut n = n % k;
     let mut k = k.clone();
@@ -39,23 +41,31 @@ pub fn jacobi(n: &BigNumber, k: &BigNumber) -> i32 {
     }
 
     if k == BigNumber::from(1) {
-        t
+        Ok(t)
     } else {
-        0
+        Err(CryptoError::InvalidJacobiSymbol)
     }
 }
 
-pub fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
-    loop {
-        // Generate a random element g from the group G^a
-        let g = BigNumber::random(&modulus);
+pub fn sample_element_with_jacobi_safe(modulus: &BigNumber) -> Result<BigNumber, CryptoError> {
+    if *modulus == BigNumber::zero() {
+        return Err(CryptoError::InvalidGroup(
+            "Modulus cannot be zero.".to_string(),
+        ));
+    }
 
-        // Check the Jacobi symbol
+    const MAX_ATTEMPTS: u32 = 1000;
+
+    for _ in 0..MAX_ATTEMPTS {
+        let g = BigNumber::random(&modulus);
         let jacobi_symbol = jacobi(&g, &modulus);
-        if jacobi_symbol == 1 {
-            return g;
+
+        if jacobi_symbol.is_ok() && jacobi_symbol.unwrap() == 1 {
+            return Ok(g);
         }
     }
+
+    Err(CryptoError::InvalidJacobiSymbol)
 }
 
 // Add lambda parameter
@@ -67,14 +77,17 @@ pub fn sample_element_with_jacobi(modulus: &BigNumber) -> BigNumber {
 /// A tuple containing the public parameters and the initial commitment.
 pub fn keygen(
     lambda: usize,
-) -> (
+) -> Result<
     (
-        Group,
-        BigNumber,
-        Arc<dyn Fn(&str) -> BigNumber + Send + Sync>,
+        (
+            Group,
+            BigNumber,
+            Arc<dyn Fn(&str) -> BigNumber + Send + Sync>,
+        ),
+        (BigNumber, BigNumber),
     ),
-    (BigNumber, BigNumber),
-) {
+    CryptoError,
+> {
     // 1 !!!!!      ----->       size valid?    ---->     Function that maps lambda to size
     // Map lambda to bit size
     let bit_size = lambda_to_bit_size(lambda);
@@ -96,13 +109,13 @@ pub fn keygen(
     let hash_function: Arc<dyn Fn(&str) -> BigNumber + Send + Sync> =
         { Arc::new(move |input: &str| map_string_to_prime(input)) };
 
-    let g = sample_element_with_jacobi(&group.modulus);
+    let g = sample_element_with_jacobi_safe(&group.modulus)?;
 
     // Create the public parameters
     let pp = (group, g.clone(), hash_function);
     let c = (BigNumber::from(1), g.clone());
 
-    (pp, c)
+    Ok((pp, c))
 }
 
 /// Maps the security parameter lambda to a bit size for prime generation.
