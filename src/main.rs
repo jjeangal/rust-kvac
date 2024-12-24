@@ -15,7 +15,7 @@ fn main() {
     // Define keys and values
     let kv1: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
     let kv2: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(10));
-    let kv3: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(18));
+    let kv3: KeyValue = KeyValue::new("test".to_string(), kv1.value() + kv2.value());
 
     // Insert the first key-value pair
     let (commitment2, proof, kv1) = insert(&commitment, &kv1);
