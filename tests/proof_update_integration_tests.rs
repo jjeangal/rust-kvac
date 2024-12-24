@@ -13,17 +13,17 @@ mod tests {
         let params = &*PUBLIC_PARAMS;
 
         // Initial values
-        let mut commitment = Commitment::new(params.one.clone(), params.g.clone());
+        let commitment = Commitment::new(params.one.clone(), params.g.clone());
         let kv: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
 
         // Insert a key-value pair
-        let (_, mut proof_k, upd) = insert(&mut commitment, &kv);
+        let (_, proof_k, _) = insert(&commitment, &kv);
 
         // Update the proof
-        let new_proof_k = proof_update(&kv.key(), &mut proof_k, &upd).unwrap();
+        let new_proof_k = proof_update(&kv.key(), &proof_k, &kv).unwrap();
 
         // Consistency check: applying the same update should yield the same result
-        let new_proof_k_again = proof_update(&kv.key(), &mut proof_k, &upd).unwrap();
+        let new_proof_k_again = proof_update(&kv.key(), &proof_k, &kv).unwrap();
         assert_eq!(
             new_proof_k, new_proof_k_again,
             "Proof update should be consistent"
@@ -35,7 +35,7 @@ mod tests {
         let pp = &PUBLIC_PARAMS;
 
         // Initialize the initial commitment
-        let mut commitment = Commitment::new(pp.one.clone(), pp.g.clone());
+        let commitment = Commitment::new(pp.one.clone(), pp.g.clone());
 
         // Define keys and values
         let kv1: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
@@ -43,19 +43,20 @@ mod tests {
         let kv3: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(18));
 
         // Insert the first key-value pair
-        let (commitment2, mut proof_k1, kv1) = insert(&mut commitment, &kv1);
+        let (commitment2, proof_k1, _) = insert(&commitment, &kv1);
 
         // Verify the first insert
         let verify_insert = verify(&commitment2, &kv1, &proof_k1);
-        println!("First insert verification: {:?}", verify_insert);
+        assert!(verify_insert.is_ok(), "Initial insert verification failed");
 
         // Update the first key-value pair
         let (commitment3, kv2) = update(&commitment2, &kv2);
 
-        let proof_upd: Proof = proof_update(&kv1.key(), &mut proof_k1, &kv2).unwrap();
+        // Update the proof
+        let proof_upd: Proof = proof_update(&kv1.key(), &proof_k1, &kv2).unwrap();
 
         // Verify the second insert
         let verify_update = verify(&commitment3, &kv3, &proof_upd);
-        println!("Second verification: {:?}", verify_update);
+        assert!(verify_update.is_ok(), "Update verification failed");
     }
 }
