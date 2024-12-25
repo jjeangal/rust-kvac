@@ -1,5 +1,5 @@
 use crate::error::CryptoError;
-use crate::group_hash_function::map_string_to_prime;
+use crate::group_hash::map_string_to_prime;
 use std::sync::Arc;
 use unknown_order::*;
 

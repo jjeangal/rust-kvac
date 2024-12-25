@@ -1,5 +1,4 @@
-use crate::error::ProofError;
-use crate::params::*;
+use crate::common::{error::ProofError, params::*};
 use unknown_order::BigNumber;
 
 /// Verifies the proof for a given key-value pair.

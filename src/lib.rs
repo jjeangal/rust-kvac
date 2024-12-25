@@ -1,10 +1,7 @@
-pub mod error;
-pub mod group_hash_function;
+pub mod common;
 pub mod insert;
-pub mod keygen;
-pub mod params;
 pub mod proof_update;
 pub mod update;
 pub mod verify;
 
-pub use error::ProofError;
+pub use common::{error, group_hash, keygen, params};

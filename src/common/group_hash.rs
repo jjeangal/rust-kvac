@@ -1,12 +1,11 @@
 use sha256::digest;
 use unknown_order::BigNumber;
 
-pub fn hash_to_number(input: &str) -> BigNumber {
+fn hash_to_number(input: &str) -> BigNumber {
     BigNumber::from_slice(digest(input))
 }
 
-// MPZ has a next prime
-pub fn next_prime(start: BigNumber) -> BigNumber {
+fn next_prime(start: BigNumber) -> BigNumber {
     let two = BigNumber::from(2);
     let mut candidate = if start <= two {
         two.clone()

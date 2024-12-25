@@ -1,4 +1,4 @@
-use crate::params::*;
+use crate::common::params::*;
 
 /// Updates a key-value pair in the commitment.
 ///

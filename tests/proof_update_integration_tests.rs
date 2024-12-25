@@ -1,10 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use rust_kvac::insert::insert;
-    use rust_kvac::params::*;
-    use rust_kvac::proof_update::proof_update;
-    use rust_kvac::update::update;
-    use rust_kvac::verify::verify;
+    use rust_kvac::common::params::*;
+    use rust_kvac::{insert::insert, proof_update::proof_update, update::update, verify::verify};
     use unknown_order::BigNumber;
 
     #[test]

@@ -1,5 +1,4 @@
-use crate::error::ProofError;
-use crate::params::*;
+use crate::common::{error::ProofError, params::*};
 use unknown_order::*;
 
 /// Updates the proof for a given key and update information.
