@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use rust_kvac::group_hash_function::*;
-    use unknown_order::BigNumber;
+    use rust_kvac::common::group_hash::*;
+    use unknown_order::*;
 
     #[test]
     fn test_next_prime() {
@@ -35,29 +35,23 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_string() {
-        let input = "";
-        let prime = map_string_to_prime(input);
-        println!("prime for empty string: {}", prime);
+    fn test_empty_input() {
+        let prime = map_string_to_prime("");
+        assert!(prime.is_prime(), "Should handle empty string");
     }
 
     #[test]
     fn test_long_string() {
         let input = "a".repeat(1000); // A long string of 1000 'a's
         let prime = map_string_to_prime(&input);
-        println!("prime for long string: {}", prime);
+        assert!(prime > BigNumber::from(0), "Prime should be positive");
+        assert!(prime.is_prime(), "Result should be prime");
     }
 
     #[test]
     fn test_map_string_to_prime() {
-        // let limit = BigNumber::from(1000);
-        // let exclude = BigNumber::from(101);
         let input = "test";
         let prime = map_string_to_prime(input);
         assert!(prime.is_prime(), "The result should be a prime number");
-        // assert!(
-        //     prime != exclude,
-        //     "The prime should not be equal to the excluded prime"
-        // );
     }
 }
