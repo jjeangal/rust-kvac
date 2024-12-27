@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use rust_kvac::error::CryptoError;
-    use rust_kvac::keygen::*;
+    use rust_kvac::common::{error::CryptoError, keygen::*};
     use unknown_order::BigNumber;
 
     #[test]

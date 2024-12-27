@@ -5,7 +5,7 @@ fn hash_to_number(input: &str) -> BigNumber {
     BigNumber::from_slice(digest(input))
 }
 
-fn next_prime(start: BigNumber) -> BigNumber {
+pub fn next_prime(start: BigNumber) -> BigNumber {
     let two = BigNumber::from(2);
     let mut candidate = if start <= two {
         two.clone()
