@@ -7,6 +7,8 @@ pub struct TestContext {
     pub kv1: KeyValue,
     pub kv2: KeyValue,
     pub kv3: KeyValue,
+    pub kv4: KeyValue,
+    pub kv5: KeyValue,
 }
 
 impl TestContext {
@@ -20,6 +22,8 @@ impl TestContext {
             kv1: KeyValue::new("test".to_string(), BigNumber::from(8)),
             kv2: KeyValue::new("test".to_string(), BigNumber::from(10)),
             kv3: KeyValue::new("test".to_string(), BigNumber::from(18)),
+            kv4: KeyValue::new("diff".to_string(), BigNumber::from(10)),
+            kv5: KeyValue::new("diff".to_string(), BigNumber::from(18)),
         }
     }
 
