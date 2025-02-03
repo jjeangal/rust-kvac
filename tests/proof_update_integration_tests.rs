@@ -1,26 +1,28 @@
+mod common;
+
 #[cfg(test)]
 mod tests {
-    use rust_kvac::common::params::*;
-    use rust_kvac::{insert::insert, proof_update::proof_update, update::update, verify::verify};
-    use unknown_order::BigNumber;
+    use super::common::context::TestContext;
+    use rust_kvac::{
+        insert::insert, params::Proof, proof_update::proof_update, update::update, verify::verify,
+    };
 
     #[test]
     fn test_proof_update_consistency() {
-        // Access the public parameters
-        let params = &*PUBLIC_PARAMS;
-
-        // Initial values
-        let commitment = Commitment::new(params.one.clone(), params.g.clone());
-        let kv: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
+        let ctx = TestContext::setup();
 
         // Insert a key-value pair
-        let (_, proof_k, _) = insert(&commitment, &kv);
+        let (commitment1, proof_k, _) = insert(&ctx.initial_commitment, &ctx.kv1);
+
+        // Verify the first insert
+        let verify_insert = verify(&commitment1, &ctx.kv1, &proof_k);
+        assert!(verify_insert.is_ok(), "Initial insert verification failed");
 
         // Update the proof
-        let new_proof_k = proof_update(&kv.key(), &proof_k, &kv).unwrap();
+        let new_proof_k = proof_update(&ctx.kv1.key(), &proof_k, &ctx.kv1).unwrap();
 
         // Consistency check: applying the same update should yield the same result
-        let new_proof_k_again = proof_update(&kv.key(), &proof_k, &kv).unwrap();
+        let new_proof_k_again = proof_update(&ctx.kv1.key(), &proof_k, &ctx.kv1).unwrap();
         assert_eq!(
             new_proof_k, new_proof_k_again,
             "Proof update should be consistent"
@@ -29,31 +31,63 @@ mod tests {
 
     #[test]
     fn test_proof_update_validity() {
-        let pp = &PUBLIC_PARAMS;
-
-        // Initialize the initial commitment
-        let commitment = Commitment::new(pp.one.clone(), pp.g.clone());
-
-        // Define keys and values
-        let kv1: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(8));
-        let kv2: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(10));
-        let kv3: KeyValue = KeyValue::new("test".to_string(), BigNumber::from(18));
+        let ctx = TestContext::setup();
 
         // Insert the first key-value pair
-        let (commitment2, proof_k1, _) = insert(&commitment, &kv1);
+        let (commitment1, proof_k1, _) = insert(&ctx.initial_commitment, &ctx.kv1);
 
         // Verify the first insert
-        let verify_insert = verify(&commitment2, &kv1, &proof_k1);
+        let verify_insert = verify(&commitment1, &ctx.kv1, &proof_k1);
         assert!(verify_insert.is_ok(), "Initial insert verification failed");
 
         // Update the first key-value pair
-        let (commitment3, kv2) = update(&commitment2, &kv2);
+        let (commitment2, _) = update(&commitment1, &ctx.kv2);
 
         // Update the proof
-        let proof_upd: Proof = proof_update(&kv1.key(), &proof_k1, &kv2).unwrap();
+        let proof_upd: Proof = proof_update(&ctx.kv1.key(), &proof_k1, &ctx.kv2).unwrap();
 
         // Verify the second insert
-        let verify_update = verify(&commitment3, &kv3, &proof_upd);
+        let verify_update = verify(&commitment2, &ctx.kv3, &proof_upd);
         assert!(verify_update.is_ok(), "Update verification failed");
+    }
+
+    #[test]
+    fn test_proof_update_validity_with_different_key() {
+        let ctx = TestContext::setup();
+
+        // Insert the first key-value pair
+        let (commitment1, proof_k1, _) = insert(&ctx.initial_commitment, &ctx.kv1);
+
+        // Verify the first insert
+        let verify_insert = verify(&commitment1, &ctx.kv1, &proof_k1);
+        assert!(verify_insert.is_ok(), "Initial insert verification failed");
+
+        // Insert the second key-value pair
+        let (commitment2, proof_k2, _) = insert(&commitment1, &ctx.kv4);
+
+        // Second insert verification on the second key-value pair
+        let verify_insert = verify(&commitment2, &ctx.kv5, &proof_k2);
+        assert!(
+            verify_insert.is_ok(),
+            "Insert verification with different key should pass"
+        );
+
+        // Update the proof for the first key-value pair
+        let proof_upd: Proof = proof_update(&ctx.kv1.key(), &proof_k1, &ctx.kv4).unwrap();
+
+        println!("proof_upd: {:?}", proof_upd);
+
+        // Verify the proof update for the first key-value pair
+        let verify_update = verify(&commitment2, &ctx.kv4, &proof_upd);
+        assert!(verify_update.is_ok(), "Proof update verification failed");
+
+        // // Update the proof for the second key-value pair
+        // let proof_upd: Proof = proof_update(&ctx.kv2.key(), &proof_k2, &ctx.kv1).unwrap();
+
+        // // println!("proof_upd: {:?}", proof_upd);
+
+        // // Verify the proof update for the second key-value pair
+        // let verify_update = verify(&commitment2, &ctx.kv3, &proof_upd);
+        // assert!(verify_update.is_ok(), "Proof update verification failed");
     }
 }
